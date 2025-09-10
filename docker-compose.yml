@@ -1,0 +1,51 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    depends_on:
+      - cadt-project-express
+    environment:
+      - EXPRESS_HOST_1=cadt-project-express
+      # - EXPRESS_HOST_2=backend-3-idg-cadt-express-2
+      # - EXPRESS_HOST_3=backend-3-idg-cadt-express-2
+      - EXPRESS_PORT=3000
+      - NGINX_SERVER_NAME=localhost
+      - NGINX_MAX_BODY=100M
+    ports:
+      - 3000:3000
+  cadt-project-express:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/app/src
+      - .env:/app/.env
+    scale: 1 # Scale to 3 instances // number of replicas server
+  file-server:
+    image: minio/minio
+    container_name: restaurant-file-server
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+  cadt-project-db:
+    image: mongo:8.0.12-noble
+    container_name: cadt-project-db
+    ports:
+      - 27017:27017
+    volumes:
+      - cadt-project-db-data:/data/db
+  # cadt-redis-cache:
+  #   image: redis:8.2.0-alpine
+  #   container_name: cadt-redis-cache
+  #   ports:
+  #     - 6379:6379
+volumes:
+  cadt-project-db-data:
+  minio-data:
