@@ -9,11 +9,13 @@ export const login = asyncHandler(async (req, res) => {
     const { username, password } = req.body
     const user = await userModel.findOne({ username: username })
     if (!user) {
-        return res.json({ message: "User not found!" })
+        return res.status(400).json({ message: "Username or Password Incorrect!"})
     }
-    const isMatched = bcrypt.compare(password, user.password)
+    const isMatched = await bcrypt.compare(password, user.password);
+    console.log(user.password);
+    console.log(isMatched);
     if (!isMatched) {
-        return res.json({ message: "Username or Password Incorrect!" })
+        return res.status(400).json({ message: "Username or Password Incorrect!"})
     }
     // JWT
     const payload = {
@@ -25,7 +27,7 @@ export const login = asyncHandler(async (req, res) => {
         payload, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE_IN
     })
-    return res.json({ accessToken: token })
+    return res.status(200).json({ accessToken: token,user: payload })
 
     // return res.status(400).json({ message: 'Invalid credential' })
 })
