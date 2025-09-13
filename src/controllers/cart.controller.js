@@ -209,3 +209,19 @@ export const getCartById = asyncHandler(async (req, res) => {
     return res.status(500).json({ message: "Server error", error: error.message });
   }
 }); 
+
+export const deleteCart = asyncHandler(async (req, res) => {
+  try {
+    const { cartId } = req.params;
+
+    const cart = await cartModel.findById(cartId);
+    if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+    await cart.deleteOne();
+
+    return res.status(200).json({ message: "Cart deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting cart:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
