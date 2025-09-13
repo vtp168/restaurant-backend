@@ -1,11 +1,10 @@
 import multer from "multer";
-
 import { Client } from 'minio';
 import { MinioStorageEngine } from '@namatery/multer-minio';
 
 export const minioClient = new Client({
     port: 9000,
-    endPoint: 'cadt-file-server',
+    endPoint: 'restaurant-file-server',
     accessKey: process.env.MINIO_ROOT_USER,
     secretKey: process.env.MINIO_ROOT_PASSWORD,
     useSSL: false,
@@ -26,7 +25,7 @@ const options = {
     },
 };
 
-const storage = new MinioStorageEngine(minioClient, 'caddt-files', options);
+const storage = new MinioStorageEngine(minioClient, 'restaurant-files', options);
 
 export const upload = multer({
     storage: storage,

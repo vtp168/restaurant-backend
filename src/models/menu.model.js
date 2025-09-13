@@ -8,26 +8,13 @@ const sizeSchema = new mongoose.Schema({
 const menuSchema = new mongoose.Schema({
   name: { type: String, required: true },
   name_kh: { type: String, required: true },
-  category: { 
-    type: String, 
-    enum: ["food", "drink", "other"], 
-    required: true 
-  },
-  subcategory: {
-    type: String,
-    enum: [
-      "stew", "roast", "food-other","fast-food", // for food
-      "beer", "non-alcohol", "wine", // for drink
-      null
-    ],
-    default: null
-  },
-  description: String,
+  category: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
+  description: {type: String, default: ""},
    // ✅ fallback price if no sizes
   price: { type: Number, default: null },
   // ✅ sizes (optional)
-  sizes: { type: [sizeSchema], default: [] },
-  image: String,
+  sizes: { type: [sizeSchema], default: null },
+  image: { type: mongoose.Schema.Types.ObjectId, ref: "File", default: null },
   available: { type: Boolean, default: true }
 });
 

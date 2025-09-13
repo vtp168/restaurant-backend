@@ -3,16 +3,10 @@ import 'dotenv/config';
  import bodyParser from 'body-parser';
  import { dbConnect } from './database/db.js';
  import { authenticate } from './middlewares/index.js';
-
-// import userRoute from './routes/user.route.js';
- 
-// import courseRoute from './routes/course.route.js';
 // import { authenticate, CacheInterceptor, cacheMiddleware, handleError, invalidateCache, limiter } from './middlewares/index.js';
-// import morgan from 'morgan'; //see all reguests in console
-// import cors from 'cors';
-// import authRoute from './routes/auth.route.js';
+ import morgan from 'morgan'; //see all reguests in console
 // import redisClient from './redis/index.js';
-// import fileRoute from './routes/file.route.js';
+
 
 import express from "express";
 import cors from "cors";
@@ -23,6 +17,7 @@ import orderRoutes from "./routes/order.route.js";
 import tableRoutes from "./routes/table.route.js";
 import userRoutes from "./routes/user.route.js";
 import cartRoutes from "./routes/cart.route.js";
+import categoryRoutes from "./routes/category.route.js";
 
 
 
@@ -35,7 +30,7 @@ const app = express();
 app.use(cors())
 // POST & PATCH & PUT
 app.use(bodyParser.json())
-//app.use(morgan('combined'))
+app.use(morgan('combined'))
 //app.use(dotenv.config())
 
 
@@ -52,6 +47,7 @@ app.use("/api/orders",authenticate, orderRoutes);
 app.use("/api/tables",authenticate,tableRoutes);
 app.use("/api/users",authenticate, userRoutes);
 app.use("/api/carts",authenticate, cartRoutes);
+app.use("/api/categories",authenticate, categoryRoutes);
 
 //const PORT = process.env.PORT || 3000;
 app.listen(3000, () => console.log(`🚀 Server running on port 3000`));

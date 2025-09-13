@@ -8,6 +8,7 @@
     "seed:demo": "cd backend && node seed/demoData.js"
   },
   "dependencies": {
+    "@namatery/multer-minio": "^1.1.2",
     "axios": "^1.7.2",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
@@ -17,9 +18,11 @@
     "express-async-handler": "^1.2.0",
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
+    "minio": "^8.0.5",
     "mongoose": "^8.3.0",
     "mongoose-paginate-v2": "^1.9.1",
     "morgan": "^1.10.1",
+    "multer": "^2.0.2",
     "pinia": "^2.1.7",
     "qrcode": "^1.5.3",
     "vue": "^3.5.0",
