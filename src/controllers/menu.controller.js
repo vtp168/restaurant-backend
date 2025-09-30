@@ -84,3 +84,66 @@ export const deleteMenu = asyncHandler(async (req, res) => {
   await menuModel.findByIdAndDelete(req.params.id);
   res.json({ message: "Menu deleted" });
 });
+
+export const getMenusByCategory = asyncHandler(async (req, res) => {
+  const categoryId = req.params.categoryId;
+  if (!categoryId.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ message: "Invalid category ID" });
+  }
+  const menus = await menuModel.find({ category: categoryId }).populate({ path: "category", select: "_id name name_kh" });
+  res.json(menus);
+});
+
+export const searchMenus = asyncHandler(async (req, res) => {
+  const { q } = req.query;
+  if (!q) {
+    return res.status(400).json({ message: "Query parameter 'q' is required" });
+  }
+  const regex = new RegExp(q, 'i'); // case-insensitive
+  const menus = await menuModel.find({ name: regex }).populate({ path: "category", select: "_id name name_kh image" });
+  res.json(menus);
+});
+
+export const toggleMenuAvailability = asyncHandler(async (req, res) => {
+  const menu = await menuModel.findById(req.params.id);
+  if (!menu) {
+    return res.status(404).json({ message: "Menu not found" });
+  }
+  menu.available = !menu.available;
+  await menu.save();
+  res.json(menu);
+});
+
+export const getAvailableMenus = asyncHandler(async (req, res) => {
+  const menus = await menuModel.find({ available: true }).populate({ path: "category", select: "_id name name_kh" });
+  res.json(menus);
+});
+
+export const getUnavailableMenus = asyncHandler(async (req, res) => {
+  const menus = await menuModel.find({ available: false }).populate({ path: "category", select: "_id name name_kh" });
+  res.json(menus);
+});
+
+export const getMenuCounts = asyncHandler(async (req, res) => {
+  const total = await menuModel.countDocuments();
+  const available = await menuModel.countDocuments({ available: true });
+  const unavailable = await menuModel.countDocuments({ available: false });
+  res.json({ total, available, unavailable });
+});
+
+export const getMenusWithSizes = asyncHandler(async (req, res) => {
+  const menus = await menuModel.find({ sizes: { $exists: true, $not: { $size: 0 } } }).populate({ path: "category", select: "_id name name_kh" });
+  res.json(menus);
+});
+
+export const getMenusWithoutSizes = asyncHandler(async (req, res) => {
+  const menus = await menuModel.find({ $or: [ { sizes: { $exists: false } }, { sizes: { $size: 0 } } ] }).populate({ path: "category", select: "_id name name_kh" });
+  res.json(menus);
+});
+
+export const getMenuCountsByCategory = asyncHandler(async (req, res) => {
+  const counts = await menuModel.aggregate([
+    { $group: { _id: "$category", count: { $sum: 1 } } }
+  ]);
+  res.json(counts);
+});

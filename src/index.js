@@ -6,6 +6,7 @@ import 'dotenv/config';
 // import { authenticate, CacheInterceptor, cacheMiddleware, handleError, invalidateCache, limiter } from './middlewares/index.js';
  import morgan from 'morgan'; //see all reguests in console
 // import redisClient from './redis/index.js';
+import { serveSwagger, setupSwagger } from './config/swagger.js';
 
 
 import express from "express";
@@ -32,7 +33,7 @@ app.use(cors())
 app.use(bodyParser.json())
 app.use(morgan('combined'))
 //app.use(dotenv.config())
-
+app.use('/docs', serveSwagger, setupSwagger); // Swagger UI for API documentation
 
 
 await dbConnect().catch((err) => {

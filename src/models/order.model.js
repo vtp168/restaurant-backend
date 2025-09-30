@@ -1,23 +1,24 @@
 import mongoose from "mongoose";
 
 const orderItemSchema = new mongoose.Schema({
-  menuItem: { type: mongoose.Schema.Types.ObjectId, ref: "MenuItem", required: true },
+  menuItemId: { type: mongoose.Schema.Types.ObjectId, ref: "Menu", required: true },
   size: { type: String, default: null },
   quantity: { type: Number, required: true },
   price: { type: Number, required: true }
 });
 
 const orderSchema = new mongoose.Schema({
-  tableId: { type: String, required: true },
+  orderNo: { type: Number, required: true, unique: true }, // auto increment
+  tableId: { type: mongoose.Schema.Types.ObjectId, ref: "Table", required: true },
   items: [orderItemSchema],
   status: { 
     type: String, 
     enum: ["pending", "preparing", "served", "paid"], 
     default: "pending" 
   },
-  total: { type: Number, required: true },
   createdAt: { type: Date, default: Date.now },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  isActive: { type: Boolean, default: true }
 });
 
 export const orderModel = mongoose.model("Order", orderSchema);

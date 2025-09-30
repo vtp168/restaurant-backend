@@ -1,5 +1,6 @@
 import {cartModel} from "../models/cart.model.js";
 import asyncHandler from 'express-async-handler';
+import { orderModel } from "../models/order.model.js";
 
 export const addCart = asyncHandler(async (req, res) => {
   //const { menuItemId, size, quantity } = req.body.items;
@@ -22,7 +23,7 @@ export const addCart = asyncHandler(async (req, res) => {
 
     cart.items = items; // add menu the cart by customer
   
-    console.log(cart.items);
+    //console.log(cart.items);
 
     const newCart = await cart.save(); // add menu the cart by customer
     return res.status(201).json({
@@ -36,7 +37,7 @@ export const addCart = asyncHandler(async (req, res) => {
 
 export const getCartByTableId = asyncHandler(async (req, res) => {
   const { tableId } = req.params;
-  console.log(tableId);
+  //console.log(tableId);
   const cart = await cartModel.findOne({ tableId, status: "active" })
   .populate({
         path: "items.menuItemId",
@@ -49,6 +50,7 @@ export const getCartByTableId = asyncHandler(async (req, res) => {
   res.json(cart || { items: [] });
 });
 
+//checkout cart to order
 export const checkoutCart= asyncHandler(async (req, res) => {
   const { tableId } = req.params;
   const cart = await cartModel.findOne({ tableId, status: "active" });
@@ -57,8 +59,36 @@ export const checkoutCart= asyncHandler(async (req, res) => {
   cart.status = "checkedout";
   await cart.save();
 
+  let newItems = cart.items.map(i => ({
+    menuItemId: i.menuItemId,
+    size: i.size,
+    quantity: i.quantity,
+    price: i.price
+  }));
+
+  // Get last orderNo
+  const lastOrder = await orderModel.findOne().sort({ orderNo: -1 });
+  const lastOrderNo = lastOrder ? lastOrder.orderNo : 0;
+  
+  // Check if there's an existing unpaid order for the table
+
+  let order = await orderModel.findOne({ tableId, status: { $ne: "paid" } });
+  if (order) {
+    // append items
+    order.items.push(...newItems);
+    await order.save();
+  } else {
+    // new order
+    order = await orderModel.create({
+      orderNo: lastOrderNo + 1,
+      tableId,
+      items: newItems,
+      createdBy: req.user._id, // from authMiddleware
+    });
+}
+
   // Here you could create an Order record for kitchen/chef
-  res.json({ message: "Checkout successful", order: cart });
+  res.json({ message: "Checkout successful", order: order });
 });
 
 // 🛒 Add item to existing Cart
