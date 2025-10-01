@@ -1,5 +1,5 @@
 import express from "express";
-import { getOrders, createOrder, updateOrder,deleteOrderByItemId,getOrderById } from "../controllers/order.controller.js";
+import { getOrders, createOrder, updateOrder,deleteOrderByItemId,getOrderById,checkoutOrder } from "../controllers/order.controller.js";
 //import { protect } from "../middlewares/auth.js";
 import { authenticate } from "../middlewares/index.js";
 
@@ -11,7 +11,7 @@ const router = express.Router();
  * tags:
  *   name: Order
  *   description: Order management
- * /
+ *
  * 
  * @swagger
  * /api/orders:
@@ -187,6 +187,8 @@ router.patch("/:orderId/item/:itemId", authenticate, deleteOrderByItemId);
  *         description: Order not found
  */
 router.get("/:id", authenticate, getOrderById);
+
+router.post("/:orderId/checkout", authenticate, checkoutOrder);
 
 
 export default router;

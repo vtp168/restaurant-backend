@@ -10,7 +10,7 @@ const router = express.Router();
  * tags:
  *   name: Cart
  *   description: Cart management and checkout
- * /
+ *
  * 
  * @swagger
  * /api/carts/{tableId}/add:

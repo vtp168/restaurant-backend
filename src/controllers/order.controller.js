@@ -1,4 +1,5 @@
 import { orderModel } from "../models/order.model.js";
+import { invoiceModel} from "../models/invoice.model.js";
 import asyncHandler from 'express-async-handler';
 
 export const getOrders = asyncHandler(async (req, res) => {
@@ -134,5 +135,69 @@ export const deleteOrderByItemId = asyncHandler(async (req, res) => {
   await order.save();
   res.status(200).json(order);
 });
+
+// Auto increment helper (basic)
+async function getNextOrderNo() {
+  const lastOrder = await orderModel.findOne().sort({ orderNo: -1 });
+  return lastOrder ? lastOrder.orderNo + 1 : 1;
+}
+
+async function getNextInvoiceNo() {
+  const lastInvoice = await invoiceModel.findOne().sort({ invoiceNo: -1 });
+  return lastInvoice ? lastInvoice.invoiceNo + 1 : 1;
+}
+
+//checkout order to Invoice
+export const checkoutOrder = asyncHandler(async (req, res) => {
+  const { paymentMethod } = req.body;
+  const orderId = req.params.orderId;
+  const validPaymentMethods = ["cash", "bank", "wallet"];
+  if (!validPaymentMethods.includes(paymentMethod)) {
+    return res.status(400).json({ message: "Invalid payment method" });
+  }
+
+  const order = await orderModel.findById(orderId);
+  if (!order) {
+    return res.status(404).json({ message: "Order not found" });
+  }
+  if (order.status === "paid") {
+    return res.status(400).json({ message: "Order is already paid" });
+  }
+
+  const tableId = order.tableId;
+  const items = order.items;
+  // Update order status to paid
+  order.status = "paid";
+  await order.save();
+
+  // 2. Calculate totals
+  const subTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const tax = subTotal * 0.1; // 10% VAT example
+  const discount = 0; // default
+  const total = subTotal + tax - discount;
+
+  // 3. Create Invoice
+  const invoiceNo = await getNextInvoiceNo();
+  const invoice = await invoiceModel.create({
+    invoiceNo,
+    orderIds: [order._id],
+    tableId,
+    subTotal,
+    tax,
+    discount,
+    total,
+    paymentMethod,
+    paidBy: req.user._id, // from authMiddleware
+    paidAt: new Date()
+  });
+
+  res.json({
+    message: "Checkout successful",
+    order,
+    invoice
+  });
+});
+
+// Additional methods can be added as needed  
 
 

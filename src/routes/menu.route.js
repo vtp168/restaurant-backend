@@ -12,7 +12,7 @@ const router = express.Router();
  * tags:
  *   name: Menu
  *   description: Menu management
- * /
+ *
  * 
  * @swagger
  * /api/menu:

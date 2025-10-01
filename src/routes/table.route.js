@@ -9,8 +9,6 @@ const router = express.Router();
  * tags:
  *   name: Table
  *   description: Table management
- * /
- * 
  * @swagger
  * /api/tables:
  *   get:

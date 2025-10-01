@@ -19,8 +19,7 @@ import tableRoutes from "./routes/table.route.js";
 import userRoutes from "./routes/user.route.js";
 import cartRoutes from "./routes/cart.route.js";
 import categoryRoutes from "./routes/category.route.js";
-
-
+import invoiceRoutes from "./routes/invoice.route.js";
 
 
 // await redisClient.connect().catch((err) => {
@@ -41,7 +40,6 @@ await dbConnect().catch((err) => {
 })
 
 app.get("/", (req, res) => res.send("Restaurant API is running..."));
-
 app.use("/api/auth", authRoutes);
 app.use("/api/menu",authenticate, menuRoutes);
 app.use("/api/orders",authenticate, orderRoutes);
@@ -49,6 +47,7 @@ app.use("/api/tables",authenticate,tableRoutes);
 app.use("/api/users",authenticate, userRoutes);
 app.use("/api/carts",authenticate, cartRoutes);
 app.use("/api/categories",authenticate, categoryRoutes);
+app.use("/api/invoices",authenticate, invoiceRoutes);
 
 //const PORT = process.env.PORT || 3000;
 app.listen(3000, () => console.log(`🚀 Server running on port 3000`));
