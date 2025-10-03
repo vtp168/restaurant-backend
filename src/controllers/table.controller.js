@@ -9,7 +9,7 @@ export const getTables = asyncHandler(async (req, res) => {
 
 export const createTable = asyncHandler(async (req, res) => {
   const table = await tableModel.create(req.body);
-  res.json(table);
+  res.status(200).json(table);
 });
 
 export const getTableById = asyncHandler(async (req, res) => {
@@ -24,5 +24,5 @@ export const deleteTable = asyncHandler(async (req, res) => {
 
 export const updateTable = asyncHandler(async (req, res) => {
   const table = await tableModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(table);
+  res.status(200).json(table);
 });

@@ -2,7 +2,7 @@ import asyncHandler from 'express-async-handler'
 import {categoryModel} from "../models/category.model.js";
 
 export const getCategories = asyncHandler(async (req, res) => {
-  const categories = await categoryModel.find();
+  const categories = await categoryModel.find().populate('parent');
   res.json(categories);
 });
 

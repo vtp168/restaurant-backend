@@ -8,7 +8,6 @@ import 'dotenv/config';
 // import redisClient from './redis/index.js';
 import { serveSwagger, setupSwagger } from './config/swagger.js';
 
-
 import express from "express";
 import cors from "cors";
 
