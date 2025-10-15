@@ -22,6 +22,10 @@ const fileSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  bucket: {
+    type: String,
+    required: true
+  },
   // Dynamic reference (Option 1: File → Related)
   relatedType: {
     type: String,

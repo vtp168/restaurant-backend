@@ -36,3 +36,31 @@ export const uploads = multer({
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 } // 5 MB limit
 }).array('files', 10);
+
+//get file url
+export const getFileUrl = async (file) => {
+  if (!file) return null;
+
+  try {
+    const url = await minioClient.presignedGetObject(
+      'restaurant-files', // your bucket name
+      file.filename,            // stored object name
+      60 * 60                   // link expires in 1 hour
+    );
+    return url;
+  } catch (err) {
+    console.error("Error generating MinIO URL:", err);
+    return null;
+  }
+};
+
+export const getMenuImage = async (req,res,file) => {
+    // const fileId = req.params.id;
+    // const file = await fileModel.findById(fileId);
+    const fileStream = await minioClient.getObject(file.bucket, file.filename);
+    res.set({
+        'Content-Type': file.mimetype,
+        'Content-Disposition': `attachment; filename="${file.originalname}"`
+    });
+    return fileStream.pipe(res);
+}

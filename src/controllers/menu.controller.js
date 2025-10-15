@@ -2,11 +2,10 @@ import { menuModel } from "../models/menu.model.js";
 import asyncHandler from 'express-async-handler';
 import { fileModel } from "../models/file.model.js";
 
-
 export const getMenus = asyncHandler(async (req, res) => {
   const menus = await menuModel.find().populate({
     path: "category", // ✅ populate category
-    select: "_id name name_kh image" // select fields to return
+    select: "_id name name_kh" // select fields to return
   }
   );
   res.json(menus);
@@ -17,11 +16,18 @@ export const getMenusById = asyncHandler(async (req, res) => {
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
     return res.status(400).json({ message: "Invalid menu ID" });
   }
-  const menu = await menuModel.findById(id);
+  const menu = await menuModel.findById(id); // will include File metadata
   if (!menu) {
     return res.status(404).json({ message: "Menu not found" });
   }
-  res.json(menu);
+  let imageUrl = null;
+  if (menu.image) {
+    //imageUrl = await getMenuImage(req,res,menu.image);
+  }
+  res.status(200).json({
+      ...menu.toObject(),
+      imageUrl, // ✅ send signed URL to frontend
+    });
 });
 
 // export const createMenu = asyncHandler(async (req, res) => {
@@ -52,6 +58,7 @@ const { name, description, category, price, sizes,name_kh } = req.body;
         url: req.file.location,
         originalname: req.file.originalname,
         encoding: req.file.encoding,
+        bucket: req.file.bucket,
         mimetype: req.file.mimetype,
         path: req.file.path,
         relatedType: "Menu",
@@ -76,8 +83,69 @@ export const uploadSingleFile = async (req, res) => {
 }
 
 export const updateMenu = asyncHandler(async (req, res) => {
-  const menu = await menuModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(menu);
+  const { id } = req.params;
+  const { name, name_kh, description, category, price, sizes, available } = req.body;
+
+  // Step 1: Find existing menu
+  const menu = await menuModel.findById(id);
+  if (!menu) {
+    return res.status(404).json({ message: "Menu not found" });
+  }
+
+  // Step 2: Update basic fields
+  menu.name = name || menu.name;
+  menu.name_kh = name_kh || menu.name_kh;
+  menu.description = description || menu.description;
+  menu.category = category || menu.category;
+  menu.available = available ?? menu.available;
+
+  // Step 3: Handle pricing (single / sizes)
+  if (sizes) {
+    try {
+      menu.sizes = JSON.parse(sizes);
+      menu.price = null; // clear single price if multiple sizes
+    } catch {
+      menu.sizes = [];
+    }
+  } else if (price) {
+    menu.price = price;
+    menu.sizes = [];
+  }
+
+  // Step 4: Handle file upload (optional)
+  if (req.file) {
+    if (menu.image && menu.image.bucket && menu.image.filename) {
+      try {
+        await minioClient.removeObject(menu.image.bucket, menu.image.filename);
+        console.log(`🗑️ Deleted old image: ${menu.image.filename} from bucket: ${menu.image.bucket}`);
+
+        // Also remove from MongoDB
+        await fileModel.findByIdAndDelete(menu.image._id);
+      } catch (err) {
+        console.error("❌ Failed to delete old image from MinIO:", err);
+      }
+    }
+    const file = new fileModel({
+      filename: req.file.filename,
+      url: req.file.location,
+      originalname: req.file.originalname,
+      encoding: req.file.encoding,
+      bucket: req.file.bucket,
+      mimetype: req.file.mimetype,
+      path: req.file.path,
+      relatedType: "Menu",
+      relatedId: menu._id,
+      uploadedBy: req.user ? req.user._id : null,
+    });
+
+    const savedFile = await file.save();
+    menu.image = savedFile._id;
+  }
+
+  // Step 5: Save updated menu
+  const updatedMenu = await menu.save();
+
+  res.status(200).json(updatedMenu);
 });
 
 export const deleteMenu = asyncHandler(async (req, res) => {

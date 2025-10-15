@@ -1,6 +1,10 @@
 import { orderModel } from "../models/order.model.js";
 import { invoiceModel} from "../models/invoice.model.js";
 import asyncHandler from 'express-async-handler';
+import { tableModel } from "../models/table.model.js";
+import { categoryModel } from "../models/category.model.js";
+import { menuModel } from "../models/menu.model.js";
+
 
 export const getOrders = asyncHandler(async (req, res) => {
   const orders = await orderModel.find().populate('tableId').
@@ -195,6 +199,41 @@ export const checkoutOrder = asyncHandler(async (req, res) => {
     message: "Checkout successful",
     order,
     invoice
+  });
+});
+
+
+// Get POS Data
+export const getPOSData = asyncHandler(async (req, res) => {
+  // Get all active tables
+  const tables = await tableModel.find({ status: "free" }).select("name status capacity");
+
+  // Get categories + menus
+  const categories = await categoryModel.find().lean();
+  const menus = await menuModel.find()
+    .populate("category", "name name_kh parent")
+    .lean();
+
+  // Group menu by category
+  const groupedMenus = categories.map((cat) => ({
+    categoryId: cat._id,
+    categoryName: cat.name,
+    categoryNameKh: cat.name_kh,
+    menus: menus
+      .filter((m) => m.category && m.category._id.toString() === cat._id.toString())
+      .map((m) => ({
+        id: m._id,
+        name: m.name,
+        name_kh: m.name_kh,
+        price: m.price,
+        sizes: m.sizes,
+        image: m.image || null,
+      })),
+  }));
+
+  res.status(200).json({
+    tables,
+    categories: groupedMenus,
   });
 });
 

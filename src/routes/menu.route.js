@@ -130,7 +130,7 @@ router.post("/", authenticate, upload,createMenu);
  * description: Invalid credentials
  * 
  */
-router.put("/:id", authenticate, updateMenu);
+router.put("/:id", authenticate,upload, updateMenu);
 /**
  * @swagger
  * /api/menu/{id}:
