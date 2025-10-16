@@ -1,5 +1,5 @@
 import express from 'express';
-import { createUser, deleteUserById, getAllUser, getUserById, updateUesrById } from '../controllers/user.controller.js';
+import { createUser, deleteUserById, getAllUser, getUserById, updateUserById } from '../controllers/user.controller.js';
 import { handleValidation } from '../middlewares/index.js';
 import { createUserValidator } from '../validators/user.validator.js';
 const userRoute = express.Router();
@@ -136,6 +136,6 @@ userRoute.post('/',createUserValidator,handleValidation,createUser)
  *       401:
  *         description: Invalid credentials
  */
-userRoute.patch('/:id', updateUesrById)
+userRoute.patch('/:id', updateUserById)
 
 export default userRoute;

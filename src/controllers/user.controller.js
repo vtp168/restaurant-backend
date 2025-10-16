@@ -29,8 +29,17 @@ export const deleteUserById = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: result })
 })
 
-export const updateUesrById = asyncHandler(async (req, res) => {
+export const updateUserById = asyncHandler(async (req, res) => {
+    const { password } = req.body
     const userId = req.params.id
+    if (password) {
+        req.body.password = bcrypt.hashSync(password, 10)
+    }
+    else {
+        delete req.body.password
+    }
+    // const result = await userModel.updateOne({ _id: userId }, { name, username, role, password })
+
     const result = await userModel.updateOne({ _id: userId }, req.body)
     return res.status(200).json({ message: 'updated', data: result })
 })
