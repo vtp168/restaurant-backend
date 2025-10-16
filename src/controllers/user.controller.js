@@ -30,18 +30,33 @@ export const deleteUserById = asyncHandler(async (req, res) => {
 })
 
 export const updateUserById = asyncHandler(async (req, res) => {
-    const { password } = req.body
-    const userId = req.params.id
-    if (password) {
-        req.body.password = bcrypt.hashSync(password, 10)
-    }
-    else {
-        delete req.body.password
-    }
-    // const result = await userModel.updateOne({ _id: userId }, { name, username, role, password })
+  const { id } = req.params
+  const { password, ...rest } = req.body
 
-    const result = await userModel.updateOne({ _id: userId }, req.body)
-    return res.status(200).json({ message: 'updated', data: result })
+  try {
+    // If password is provided, hash it
+    if (password && password.trim() !== '') {
+      rest.password = bcrypt.hashSync(password, 10)
+    }
+
+    // Update and return the updated user
+    const updatedUser = await userModel.findByIdAndUpdate(id, rest, {
+      new: true, // return updated document
+      runValidators: true, // validate before saving
+    })
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    return res.status(200).json({
+      message: 'User updated successfully',
+      data: updatedUser,
+    })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ message: 'Failed to update user', error })
+  }
 })
 
 export const createUser = asyncHandler(async (req, res) => {
