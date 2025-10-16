@@ -1,5 +1,6 @@
 import { userModel } from "../models/user.model.js"
 import asyncHandler from 'express-async-handler'
+import bcrypt from 'bcrypt';
 
 export const getAllUser = asyncHandler(async (req, res) => {
     const limit = req.query.limit || 10
@@ -23,8 +24,9 @@ export const getUserById = asyncHandler(async (req, res) => {
 
 export const deleteUserById = asyncHandler(async (req, res) => {
     const userId = req.params.id
-    const result = await userModel.deleteOne({ _id: userId })
-    return res.json({ message: result })
+    // const result = await userModel.deleteOne({ _id: userId })
+    const result = await userModel.updateOne({ _id: userId }, { isActive: false });
+    return res.status(200).json({ message: result })
 })
 
 export const updateUesrById = asyncHandler(async (req, res) => {
@@ -34,7 +36,14 @@ export const updateUesrById = asyncHandler(async (req, res) => {
 })
 
 export const createUser = asyncHandler(async (req, res) => {
-    const user = new userModel(req.body)
-    await user.save()
-    return res.status(201).json(user)
+    const { fullname, username, role, password } = req.body
+    const encrypedPassword = bcrypt.hashSync(password, 10)
+       const user = new userModel({
+           fullname,
+           username,
+           role,
+           password: encrypedPassword
+       })
+       await user.save()
+       return res.status(200).json(user)
 })

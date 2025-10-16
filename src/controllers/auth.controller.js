@@ -33,15 +33,14 @@ export const login = asyncHandler(async (req, res) => {
 })
 
 export const register= asyncHandler(async (req, res) => {
-    const { name, username, role, age, email, password } = req.body
+    const { fullname, username, role, password } = req.body
     const encrypedPassword = bcrypt.hashSync(password, 10)
     const user = new userModel({
-        name,
+        fullname,
         username,
         role,
-        email,
         password: encrypedPassword
     })
     await user.save()
-    return res.json(user)
+    return res.status(200).json(user)
 })

@@ -96,6 +96,46 @@ userRoute.get('/', getAllUser)
 userRoute.get('/:id', getUserById)
 userRoute.delete('/:id', deleteUserById)
 userRoute.post('/',createUserValidator,handleValidation,createUser)
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   patch:
+ *     summary: Updates user
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullname:
+ *                type: string
+ *                example: Bun Rithy
+ *               username:
+ *                 type: string
+ *                 example: bun
+ *               password:
+ *                 type: string
+ *                 example: 12345678
+ *               role:
+ *                 type: string
+ *                 example: waiter
+ *     responses:
+ *       201:
+ *         description: User update successfully
+ *       401:
+ *         description: Invalid credentials
+ */
 userRoute.patch('/:id', updateUesrById)
 
 export default userRoute;
