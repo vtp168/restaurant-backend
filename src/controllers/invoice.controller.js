@@ -2,18 +2,27 @@ import { invoiceModel} from "../models/invoice.model.js";
 import { orderModel } from "../models/order.model.js";
 import asyncHandler from 'express-async-handler';
 
-
 export const printInvoice = asyncHandler(async (req, res) => {
-  const invoice = await invoiceModel.findById(req.params.invoiceId)
+  const invoce = await invoiceModel.findById(req.params.invoiceId)
   .populate('tableId')
-  .populate({path:'orderIds',select: '_id orderNo items total createdAt'})
-  .populate({path:'orderIds.items.menuItemId',select: 'name'})
-  .populate({path:'paidBy',select: '_id username fullname'});
-  if (!invoice) {
+  .populate({
+    path: 'orderIds',
+    select: '_id orderNo items total createdAt',
+    populate: {
+      path: 'items.menuItemId',
+      select: 'name name_kh', // បន្ថែម field ផ្សេងៗបាន
+    },
+  })
+  .populate({
+    path: 'paidBy',
+    select: '_id username fullname',
+  });
+  if (!invoce) {
     return res.status(404).json({ message: "Invoice not found" });
   }
-  return res.status(200).json(invoice);
+  return res.status(200).json(invoce);
 });
+
 
 // Checkout Order and Create Invoice
 export const checkoutOrder = asyncHandler(async (req, res) => {

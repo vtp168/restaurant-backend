@@ -1,5 +1,5 @@
 import express from "express";
-import { getTables, createTable, updateTable, getTableById, deleteTable } from "../controllers/table.controller.js";
+import { getTables, createTable, updateTable, getTableById, deleteTable,getTablesByStatus } from "../controllers/table.controller.js";
 //import { protect, managerOnly } from "../middlewares/auth.js";
 
 const router = express.Router();
@@ -142,5 +142,27 @@ router.put("/:id",updateTable);
  *   description: Server error
  */
 router.delete("/:id",deleteTable);
+
+/**
+ * 
+ * @swagger
+ * tags:
+ *   name: Table
+ *   description: Table management
+ * @swagger
+ * /api/tables/status/free:
+ *   get:
+ *     summary: Get all free tables
+ *     tags: [Table]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all tables
+ *       401:
+ *         description: Invalid credentials
+ */
+
+router.get("/status/:status",getTablesByStatus);
 
 export default router;

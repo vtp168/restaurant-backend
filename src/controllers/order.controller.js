@@ -41,6 +41,14 @@ export const createOrder = asyncHandler(async (req, res) => {
       createdBy: req.user._id, // from authMiddleware
     });
   }
+  tableModel.findById(tableId).then(table => {
+    if (table && table.status === "free") {
+      table.status = "occupied";
+      table.save();
+    }
+  }).catch(err => {
+    console.error("Error updating table status:", err);
+  });
   return res.status(201).json(order);
 
 });
@@ -52,7 +60,7 @@ export const updateOrder = asyncHandler(async (req, res) => {
 
 export const deleteOrder = asyncHandler(async (req, res) => {
   await orderModel.findByIdAndDelete(req.params.id);
-  res.status(204).end();
+  res.status(200).json({ message: "Order deleted" });
 });
 
 export const getOrderById = asyncHandler(async (req, res) => {
@@ -65,7 +73,7 @@ export const getOrderById = asyncHandler(async (req, res) => {
 
 export const getOrdersByTableId = asyncHandler(async (req, res) => {
   const tableId = req.params.tableId;
-  const orders = await orderModel.find({ tableId }).populate('tableId').populate({  path:'createdBy',
+  const orders = await orderModel.find({ tableId,status:"pending" }).populate('tableId').populate({  path:'createdBy',
   select: '_id username fullname'
 }).populate({   path: "items.menuItemId",
   select: "name name_kh"
@@ -173,6 +181,8 @@ export const checkoutOrder = asyncHandler(async (req, res) => {
   // Update order status to paid
   order.status = "paid";
   await order.save();
+  // 1. Update table status to free
+  await tableModel.findByIdAndUpdate(tableId, { status: "free" });
 
   // 2. Calculate totals
   const subTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -197,7 +207,6 @@ export const checkoutOrder = asyncHandler(async (req, res) => {
 
   res.json({
     message: "Checkout successful",
-    order,
     invoice
   });
 });
@@ -235,6 +244,50 @@ export const getPOSData = asyncHandler(async (req, res) => {
     tables,
     categories: groupedMenus,
   });
+});
+
+export const chageItemQuantity = asyncHandler(async (req, res) => {
+  const { orderId, itemId } = req.params;
+  const { quantity } = req.body;
+
+  if (quantity <= 0) {
+    return res.status(400).json({ message: "Quantity must be greater than zero" });
+  }
+
+  const order = await orderModel.findById(orderId);
+  if (!order) {
+    return res.status(404).json({ message: "Order not found" });
+  }
+
+  const item = order.items.id(itemId);
+  if (!item) {
+    return res.status(404).json({ message: "Item not found in order" });
+  }
+
+  item.quantity = quantity;
+  await order.save();
+
+  res.status(200).json(order);
+});
+
+export const addItemByOrderId = asyncHandler(async (req, res) => {
+  const { orderId } = req.params;
+  const { items } = req.body;
+  //console.log("Adding items:", items, "to order:", orderId);
+
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ message: "Items are required" });
+  }
+
+  const order = await orderModel.findById(orderId);
+  if (!order) {
+    return res.status(404).json({ message: "Order not found" });
+  }
+
+  order.items.push(...items);
+  await order.save();
+
+  res.status(200).json(order);
 });
 
 // Additional methods can be added as needed  
