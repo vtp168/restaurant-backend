@@ -12,8 +12,9 @@ export const getDashboardSummary = async (req, res) => {
     ])
     const totalRevenue = totalRevenueAgg.length > 0 ? totalRevenueAgg[0].total : 0
 
-    const recentOrders = await orderModel.find()
+    const recentOrders = await orderModel.find({status:'pending'})
       .populate('createdBy', 'fullname')
+      .populate('tableId', 'name')
       .sort({ createdAt: -1 })
       .limit(10)
 

@@ -17,6 +17,17 @@ export const getOrders = asyncHandler(async (req, res) => {
   res.status(200).json(orders);
 });
 
+export const getAllPendingOrders = asyncHandler(async (req, res) => {
+ const orders = await orderModel.find({status:'pending'}).populate('tableId').
+  populate({path:'createdBy',
+     select: '_id username fullname'
+  }).populate({
+    path: "items.menuItemId",
+    select: "name name_kh"
+  });
+  res.status(200).json(orders);
+});
+
 export const createOrder = asyncHandler(async (req, res) => {
   const tableId = req.params.tableId;
   const { items } = req.body;
@@ -64,7 +75,11 @@ export const deleteOrder = asyncHandler(async (req, res) => {
 });
 
 export const getOrderById = asyncHandler(async (req, res) => {
-  const order = await orderModel.findById(req.params.id);
+  const order = await orderModel.findById(req.params.id).populate('tableId').populate({  path:'createdBy',
+  select: '_id username fullname'
+  }).populate({   path: "items.menuItemId",
+    select: "name name_kh"
+  });
   if (!order) {
     return res.status(404).json({ message: "Order not found" });
   }

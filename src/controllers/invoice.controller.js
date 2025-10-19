@@ -76,6 +76,7 @@ async function getNextInvoiceNo() {
 export const getInvoices = asyncHandler(async (req, res) => {
   const invoices = await invoiceModel.find()
     .populate('tableId')
+    .populate({path:'paidBy',select: '_id username fullname' })
     .populate({path:'orderIds',
        select: '_id orderNo items total createdAt'
     });

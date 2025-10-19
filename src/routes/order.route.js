@@ -1,5 +1,5 @@
 import express from "express";
-import { getOrders, createOrder, updateOrder,deleteOrder,getOrderById,checkoutOrder, getPOSData,deleteOrderByItemId, getOrdersByTableId, chageItemQuantity,addItemByOrderId } from "../controllers/order.controller.js";
+import { getOrders, createOrder, updateOrder,deleteOrder,getOrderById,checkoutOrder, getPOSData,deleteOrderByItemId, getOrdersByTableId, chageItemQuantity,addItemByOrderId,getAllPendingOrders } from "../controllers/order.controller.js";
 //import { protect } from "../middlewares/auth.js";
 import { authenticate } from "../middlewares/index.js";
 
@@ -203,6 +203,9 @@ router.post("/:orderId/item", authenticate, addItemByOrderId);
 
 //delete item from order by itemId
 router.delete("/:orderId/item/:itemId", authenticate, deleteOrderByItemId);
+
+//get Pending Orders
+router.get("/pending/oders", authenticate, getAllPendingOrders);
 
 
 export default router;
