@@ -21,7 +21,8 @@ export const login = asyncHandler(async (req, res) => {
     const payload = {
         _id: user._id,
         username: user.username,
-        role: user.role
+        role: user.role,
+        fullname:user.fullname
     }
     const token = jwt.sign(
         payload, process.env.JWT_SECRET, {

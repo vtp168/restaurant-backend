@@ -20,6 +20,9 @@ import cartRoutes from "./routes/cart.route.js";
 import categoryRoutes from "./routes/category.route.js";
 import invoiceRoutes from "./routes/invoice.route.js";
 import fileRoute from './routes/file.route.js';
+import dashboardRoute from './routes/dashboard.route.js'
+
+
 
 
 // await redisClient.connect().catch((err) => {
@@ -49,6 +52,7 @@ app.use("/api/carts",authenticate, cartRoutes);
 app.use("/api/categories",authenticate, categoryRoutes);
 app.use("/api/invoices",authenticate, invoiceRoutes);
 app.use('/api/files', fileRoute);
+app.use('/api/dashboard', dashboardRoute)
 
 //const PORT = process.env.PORT || 3000;
 app.listen(3000, () => console.log(`🚀 Server running on port 3000`));
