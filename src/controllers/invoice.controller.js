@@ -73,15 +73,50 @@ async function getNextInvoiceNo() {
   return lastInvoice ? lastInvoice.invoiceNo + 1 : 1;
 }
 
+// export const getInvoices = asyncHandler(async (req, res) => {
+//   const invoices = await invoiceModel.find()
+//     .populate('tableId')
+//     .populate({path:'paidBy',select: '_id username fullname' })
+//     .populate({path:'orderIds',
+//        select: '_id orderNo items total createdAt'
+//     });
+//     res.status(200).json(invoices);
+// });
+
 export const getInvoices = asyncHandler(async (req, res) => {
+  // Get pagination parameters from query (default: page=1, limit=10)
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  // Count total documents for pagination metadata
+  const totalInvoices = await invoiceModel.countDocuments();
+
+  // Query with pagination and sort
   const invoices = await invoiceModel.find()
     .populate('tableId')
-    .populate({path:'paidBy',select: '_id username fullname' })
-    .populate({path:'orderIds',
-       select: '_id orderNo items total createdAt'
-    });
-    res.status(200).json(invoices);
+    .populate({
+      path: 'paidBy',
+      select: '_id username fullname'
+    })
+    .populate({
+      path: 'orderIds',
+      select: '_id orderNo items total createdAt'
+    })
+    .sort({ invoiceNo: -1 }) // Sort newest first
+    .skip(skip)
+    .limit(limit);
+
+  // Send paginated response
+  res.status(200).json({
+    currentPage: page,
+    totalPages: Math.ceil(totalInvoices / limit),
+    totalInvoices,
+    count: invoices.length,
+    invoices
+  });
 });
+
 
 export const getInvoiceById = asyncHandler(async (req, res) => {
   const invoice = await invoiceModel.findById(req.params.id)

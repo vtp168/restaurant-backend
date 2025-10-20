@@ -73,7 +73,7 @@ export const createUser = asyncHandler(async (req, res) => {
 })
 
 export const updateProfile = async (req, res) => {
-  const user = await User.findById(req.user.id)
+  const user = await userModel.findById(req.user.id)
   if (!user) return res.status(404).json({ message: 'User not found' })
 
   const { fullname, oldPassword, password } = req.body
@@ -90,5 +90,5 @@ export const updateProfile = async (req, res) => {
   }
 
   await user.save()
-  res.json({ message: 'Profile updated successfully' })
+  res.status(200).json({ message: 'Profile updated successfully' })
 }

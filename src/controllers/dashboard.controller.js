@@ -1,4 +1,5 @@
 import { orderModel } from "../models/order.model.js";
+import { invoiceModel } from "../models/invoice.model.js";
 
 // 🧾 Dashboard summary
 export const getDashboardSummary = async (req, res) => {
@@ -6,8 +7,8 @@ export const getDashboardSummary = async (req, res) => {
     const totalOrders = await orderModel.countDocuments()
     const totalDelivered = await orderModel.countDocuments({ status: 'completed' })
     const totalCanceled = await orderModel.countDocuments({ status: 'canceled' })
-    const totalRevenueAgg = await orderModel.aggregate([
-      { $match: { status: 'completed' } },
+    const totalRevenueAgg = await invoiceModel.aggregate([
+      // { $match: { status: 'paid' } },
       { $group: { _id: null, total: { $sum: '$total' } } },
     ])
     const totalRevenue = totalRevenueAgg.length > 0 ? totalRevenueAgg[0].total : 0
